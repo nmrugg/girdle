@@ -870,20 +870,20 @@ var G = (function ()
             
             return {
                 /**
-                * Add one or more events to the event cue.
-                *
-                * @example system.event.attach("contentAddedAbove", function (e) {});
-                * @example system.event.attach("contentAddedAbove", function (e) {}, true);
-                * @example system.event.attach(["contentAddedAbove", "contentRemovedAbove"], function (e) {});
-                * @example system.event.attach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, true);
-                * @example system.event.attach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, [true, false]);
-                * @param   name (string || array)             The name of the event or an array of names of events.
-                * @param   func (function)                    The function to call when the event it triggered.
-                * @param   once (boolean || array) (optional) Whether or not to detach this function after being executed once. If "name" is an array, then "once" can also be an array of booleans.
-                * @return  NULL
-                * @note    If func(e) calls e.stopPropagation(), it will stop further event propagation.
-                * @todo    Determine the value of adding a run_once property that removes function after the first run.
-                */
+                 * Add one or more events to the event cue.
+                 *
+                 * @example system.event.attach("contentAddedAbove", function (e) {});
+                 * @example system.event.attach("contentAddedAbove", function (e) {}, true);
+                 * @example system.event.attach(["contentAddedAbove", "contentRemovedAbove"], function (e) {});
+                 * @example system.event.attach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, true);
+                 * @example system.event.attach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, [true, false]);
+                 * @param   name (string || array)             The name of the event or an array of names of events.
+                 * @param   func (function)                    The function to call when the event it triggered.
+                 * @param   once (boolean || array) (optional) Whether or not to detach this function after being executed once. If "name" is an array, then "once" can also be an array of booleans.
+                 * @return  NULL
+                 * @note    If func(e) calls e.stopPropagation(), it will stop further event propagation.
+                 * @todo    Determine the value of adding a run_once property that removes function after the first run.
+                 */
                 attach: function attach(name, func, once)
                 {
                     var arr_len,
@@ -911,15 +911,15 @@ var G = (function ()
                     }
                 },
                 /**
-                * Remove an event from the event cue.
-                *
-                * @example system.event.detach("contentAddedAbove", function (e) {});
-                * @example system.event.detach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, [true, false]);
-                * @example system.event.detach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, true);
-                * @param   name (string || array)             The name of the event or an array of names of events.
-                * @param   func (function)                    The function that was attached to the specified event.
-                * @param   once (boolean || array) (optional) Whether or not to detach this function after being executed once. If "name" is an array, then "once" can also be an array of booleans.
-                */
+                 * Remove an event from the event cue.
+                 *
+                 * @example system.event.detach("contentAddedAbove", function (e) {});
+                 * @example system.event.detach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, [true, false]);
+                 * @example system.event.detach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, true);
+                 * @param   name (string || array)             The name of the event or an array of names of events.
+                 * @param   func (function)                    The function that was attached to the specified event.
+                 * @param   once (boolean || array) (optional) Whether or not to detach this function after being executed once. If "name" is an array, then "once" can also be an array of booleans.
+                 */
                 detach: function detach(name, func, once)
                 {
                     var i;
@@ -1099,6 +1099,9 @@ var G = (function ()
             }
         };
         
+        /**
+         * Requires spin.js (not included)
+         */
         G.create_spinner = function (new_options)
         {
             var options = {
@@ -1173,8 +1176,8 @@ var G = (function ()
         };
         
         /**
-        * form, button and message can be an element or a string.
-        */
+         * form, button and message can be an element or a string.
+         */
         G.handle_forms = function handle_forms(options)
         {
             var hide_message_timer,
