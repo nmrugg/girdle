@@ -97,7 +97,10 @@ var G = (function ()
             (function loop(i)
             {
                 if (i >= len) {
-                    return done();
+                    if (done) {
+                        return done();
+                    }
+                    return;
                 }
                 
                 oneach(arr[i], function next()
