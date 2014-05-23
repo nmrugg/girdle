@@ -1,0 +1,20 @@
+{
+  "name": "girdle",
+  "description": "A JS utility belt",
+  "version": "0.1.0",
+  "author": {
+    "name": "Nathan Rugg",
+    "email": "nmrugg@gmail.com"
+  },
+  "keywords": [
+    "utility"
+  ],
+  "main": "girdle.js",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://nate.mit-license.org/"
+    }
+  ],
+  "readmeFilename": "readme.md"
+}
