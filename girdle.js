@@ -343,6 +343,8 @@ var G = (function ()
                             /// query() is sent back to let the caller retry if desired.
                             /// ajax is also sent back because it can offer extra data, like ajax.status.
                             callback(err, parse_if_json(ajax), query, ajax);
+                            /// Make sure it's not called twice. For example, if both onerror and onload are called.
+                            callback = null;
                         }
                     }
                     
