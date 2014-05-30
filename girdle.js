@@ -137,11 +137,15 @@ var G = (function ()
                     Object.keys(properties).forEach(function (prop)
                     {
                         var prop_name = prop_sub[prop] || prop;
-                        
-                        if (prop === "list" || prop === "for" || prop.indexOf(":") > -1) {
-                            el.setAttribute(prop_name, properties[prop]);
-                        } else {
-                            el[prop_name] = properties[prop];
+                        try {
+                            if (prop === "colspan" || prop === "list" || prop === "for" || prop.indexOf(":") > -1) {
+                                el.setAttribute(prop_name, properties[prop]);
+                            } else {
+                                el[prop_name] = properties[prop];
+                            }
+                        } catch (e) {
+                            console.log(prop);
+                            console.log(e);
                         }
                     });
                 }
