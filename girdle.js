@@ -1033,6 +1033,7 @@ var G = (function ()
             /// If form is a function, then it can be called to send the onsubmit event.
             if (form) {
                 form.addEventListener("submit", submit_form);
+                return submit_form;
             } else if (options.trigger_form_submit) {
                 throw "In order for this to work, we need a way to get_data_from_form() and not try to prevent the default event.";
                 //options.trigger_form_submit(submit_form)
