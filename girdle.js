@@ -178,7 +178,7 @@ var G = (function ()
             G.mobile = (function is_it_mobile()
             {
                 var mobile = false,
-                    regex = /android|ipad|iphone|mobile|tablet|linux\sarmv7l/i; /// Android often has "Linux armv7l" as it's platform.
+                    regex = /android|ipad|iphone|mobi|tablet|linux\sarmv7l/i; /// Android often has "Linux armv7l" as it's platform.
                 
                 if (window.navigator) {
                     mobile = regex.test(navigator.userAgent) || regex.test(navigator.platform);
