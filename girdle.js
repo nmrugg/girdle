@@ -279,13 +279,22 @@ var G = (function ()
                 function parse_if_json()
                 {
                     var res,
-                        type = ajax.getResponseHeader("Content-Type");
+                        type;
                     
-                    ///NOTE: The header may include a charset.
-                    if (type && type.indexOf("application/json") > -1) {
-                        res = G.parse_json(ajax.responseText);
-                    } else {
-                        res = ajax.responseText;
+                    if (ajax.readyState === 4) {
+                        ///NOTE: If the request returned a blob, accesing the responseText property throws an error.
+                        if (ajax.responseType === "blob") {
+                            res = ajax.response;
+                        } else {
+                            /// Chrome throws an error if this is called before it's ready.
+                            type = ajax.getResponseHeader("Content-Type");
+                            ///NOTE: The header may include a charset.
+                            if (type && type.indexOf("application/json") > -1) {
+                                res = G.parse_json(ajax.responseText);
+                            } else {
+                                res = ajax.responseText;
+                            }
+                        }
                     }
                     
                     return res;
