@@ -644,10 +644,11 @@ var G = (function ()
                             if (!func_list[name]) {
                                 func_list[name] = [];
                             }
-                            func_list[name][func_list[name].length] = {
+                            /// Since we may remove events while calling them, it's easiest to store the array in reverse.
+                            func_list[name].unshift({
                                 func: func,
                                 once: once
-                            };
+                            });
                         }
                     }
                 },
@@ -684,22 +685,19 @@ var G = (function ()
                     }
                 },
                 /**
-                * Trigger the functions attached to an event.
-                *
-                * @param  name (string) The name of the event to trigger.
-                * @param  e    (object) The event object sent to the called functions.
-                * @return NULL
-                */
+                 * Trigger the functions attached to an event.
+                 *
+                 * @param  name (string) The name of the event to trigger.
+                 * @param  e    (object) The event object sent to the called functions.
+                 * @return NULL
+                 */
                 trigger: function trigger(name, e)
                 {
-                    var func_arr_len,
-                        i,
+                    var i,
                         stop_propagation;
                     
                     /// Does this event have any functions attached to it?
                     if (func_list[name]) {
-                        func_arr_len = func_list[name].length;
-                        
                         if (!G.is_object(e)) {
                             /// If the event object was not specificed, it needs to be created in order to attach stopPropagation() to it.
                             e = {};
@@ -711,7 +709,8 @@ var G = (function ()
                             stop_propagation = true;
                         };
                         
-                        for (i = 0; i < func_arr_len; i += 1) {
+                        /// Execute the functions in reverse order so that we can remove them without throwing the order off.
+                        for (i = func_list[name].length - 1; i >= 0; i -= 1) {
                             ///NOTE: It would be a good idea to use a try/catch to prevent errors in events from preventing the code that called the
                             ///      event from firing.  However, there would need to be some sort of error handling. Sending a message back to the
                             ///      server would be a good feature.
