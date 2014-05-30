@@ -969,8 +969,11 @@ var G = (function ()
                 var data = G.get_data_from_form(form),
                     validate_error;
                 
-                /// Stop the form from submitting.
-                e.preventDefault();
+                ///NOTE: This function can be called by the code instead of an event from the user.
+                if (e && typeof e.preventDefault === "function") {
+                    /// Stop the form from submitting.
+                    e.preventDefault();
+                }
                 
                 if (!data || !data.obj) {
                     show_message();
