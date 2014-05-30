@@ -994,18 +994,30 @@ var G = (function ()
                 
                 G.easy_ajax(options.url || "/api", {method: "POST", message: G.make_params(data.obj)}, function onres(err, res)
                 {
+                    var failed,
+                        fail_message = {message: ""};
+                    
                     button.disabled = false;
                     button.classList.remove("disabled");
                     
-                    if (err || !res || res.err || !res.success) {
-                        show_message(res && res.err && res.err.message ? res.err.message : "");
+                    if (options.evaluate) {
+                        failed = options.evaluate(err, res, fail_message) === false;
+                    } else {
+                        failed = Boolean(err || !res || res.err || !res.success);
+                    }
+                    
+                    if (failed) {
+                        if (!fail_message.message && res && res.err && res.err.message) {
+                            fail_message.message = res.err.message;
+                        }
+                        show_message(fail_message.message);
                         if (options.onfail) {
-                            options.onfail();
+                            options.onfail(err, res);
                         }
                     } else {
                         show_message(options.success_message, true);
                         if (options.onsuccess) {
-                            options.onsuccess();
+                            options.onsuccess(res);
                         }
                     }
                 });
