@@ -760,14 +760,14 @@ var G = (function ()
         
         G.set_login_cookie = function (products)
         {
-            var expires_in = 23328000000;
+            var expires_in = 23328000000; /// 9 months in milliseconds (1000 * 60 * 60 * 24 * 30 * 9)
             
             /// Expires matches session_cookie_expire from config.
-            Cookies.set("li", 1, {secure: location.protocol === "https:", expires: expires_in}); /// 9 months in milliseconds (1000 * 60 * 60 * 24 * 30 * 9)
+            Cookies.set("li", 1, {secure: location.protocol === "https:", expires: expires_in});
             if (!products) {
                 products = G.get_products();
             }
-            Cookies.set("p", JSON.stringify(products), {secure: location.protocol === "https:", expires: expires_in}); /// 9 months in milliseconds (1000 * 60 * 60 * 24 * 30 * 9)
+            Cookies.set("p", JSON.stringify(products), {secure: location.protocol === "https:", expires: expires_in});
         };
         
         G.is_logged_in = function ()
@@ -916,13 +916,13 @@ var G = (function ()
         };
         
         /**
-         * form, button and message can be an element or a string.
+         * options.form, options.button and options.message can be an element or a string.
          */
         G.handle_forms = function handle_forms(options)
         {
             var hide_message_timer,
-                form    = typeof options.form    === "string" ? document.getElementById(options.form) : options.form,
-                button  = typeof options.button  === "string" ? document.getElementById(options.button) : options.button,
+                form    = typeof options.form    === "string" ? document.getElementById(options.form)    : options.form,
+                button  = typeof options.button  === "string" ? document.getElementById(options.button)  : options.button,
                 message = typeof options.message === "string" ? document.getElementById(options.message) : options.message;
             
             function show_message(str, success)
