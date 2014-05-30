@@ -357,6 +357,10 @@ var G = (function ()
                         post_message = message;
                     }
                     
+                    if (options.responseType) {
+                        ajax.responseType = options.responseType;
+                    }
+                    
                     /// Prepare headers.
                     if (!Array.isArray(headers)) {
                         headers = [headers];
