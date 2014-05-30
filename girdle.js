@@ -269,6 +269,11 @@ var G = (function ()
                         aborted = true;
                         ajax.orig_abort();
                     }
+                    
+                    /// Make sure a callback is called.
+                    if (ajax.onerror) {
+                        ajax.onerror();
+                    }
                 }
                 
                 function parse_if_json()
