@@ -9,6 +9,11 @@ var G = (function ()
         {
             var len = arr.length;
             
+            /// Ignore empty arrays.
+            if (!len) {
+                return;
+            }
+            
             /// Handle negative numbers.
             if (i < 0) {
                 i = len + i;
@@ -19,26 +24,25 @@ var G = (function ()
             if (i === len - 1) {
                 arr.pop();
             /// If the second to last element is to be removed, we can just pop off the last one and replace the second to last one with it.
-            ///NOTE: This is always the fastest method and it is orderly too.
-            } else if (i === len - 2) {
-                arr[len - 2] = arr.pop();
-            /// Can use we the faster (but unorderly) remove method?
+            /// Or can use we the faster (but unorderly) remove method?
+            ///NOTE: This is the fasted method and it is orderly for the second to last element.
             } else if (order_irrelevant || i === len - 2) {
                 if (i >= 0 && i < len) {
                     /// This works by popping off the last array element and using that to replace the element to be removed.
                     arr[i] = arr.pop();
                 }
-            } else {
+            } else if (i === 0) {
                 /// The first element can be quickly shifted off.
-                if (i === 0) {
-                    arr.shift();
-                /// Ignore numbers that are still negative.
-                ///NOTE: By default, if a number is below the total array count (e.g., array_remove([0,1], -3)), splice() will remove the first element.
+                arr.shift();
+            } else if (i === 1) {
+                /// The second element can be quickly replaced by the first.
+                arr[0] = arr.shift();
+            } else if (i > 0) {
+                ///NOTE: Ignore numbers that are still negative.
+                ///      By default, if a number is below the total array count (e.g., array_remove([0,1], -3)), splice() will remove the first element.
                 ///      This behavior is undesirable because it is unexpected.
-                } else if (i > 0) {
-                    /// Use the orderly, but slower, splice method.
-                    arr.splice(i, 1);
-                }
+                /// Use the orderly, but slower, splice method.
+                arr.splice(i, 1);
             }
         },
         
