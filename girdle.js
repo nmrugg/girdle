@@ -1,5 +1,7 @@
 // jshint forin:true, noarg:true, noempty:true, eqeqeq:true, bitwise:true, onevar:true, strict:true, undef:true, unused:strict, curly:true, browser:true, evil:true, node:true
 
+/* global Cookies, Spinner */
+
 var G = (function ()
 {
     "use strict";
@@ -8,11 +10,6 @@ var G = (function ()
         array_remove: function array_remove(arr, i, order_irrelevant)
         {
             var len = arr.length;
-            
-            /// Ignore empty arrays.
-            if (!len) {
-                return;
-            }
             
             /// Handle negative numbers.
             if (i < 0) {
@@ -24,25 +21,26 @@ var G = (function ()
             if (i === len - 1) {
                 arr.pop();
             /// If the second to last element is to be removed, we can just pop off the last one and replace the second to last one with it.
-            /// Or can use we the faster (but unorderly) remove method?
-            ///NOTE: This is the fasted method and it is orderly for the second to last element.
+            ///NOTE: This is always the fastest method and it is orderly too.
+            } else if (i === len - 2) {
+                arr[len - 2] = arr.pop();
+            /// Can use we the faster (but unorderly) remove method?
             } else if (order_irrelevant || i === len - 2) {
                 if (i >= 0 && i < len) {
                     /// This works by popping off the last array element and using that to replace the element to be removed.
                     arr[i] = arr.pop();
                 }
-            } else if (i === 0) {
+            } else {
                 /// The first element can be quickly shifted off.
-                arr.shift();
-            } else if (i === 1) {
-                /// The second element can be quickly replaced by the first.
-                arr[0] = arr.shift();
-            } else if (i > 0) {
-                ///NOTE: Ignore numbers that are still negative.
-                ///      By default, if a number is below the total array count (e.g., array_remove([0,1], -3)), splice() will remove the first element.
+                if (i === 0) {
+                    arr.shift();
+                /// Ignore numbers that are still negative.
+                ///NOTE: By default, if a number is below the total array count (e.g., array_remove([0,1], -3)), splice() will remove the first element.
                 ///      This behavior is undesirable because it is unexpected.
-                /// Use the orderly, but slower, splice method.
-                arr.splice(i, 1);
+                } else if (i > 0) {
+                    /// Use the orderly, but slower, splice method.
+                    arr.splice(i, 1);
+                }
             }
         },
         
@@ -256,7 +254,7 @@ var G = (function ()
                 ajax.is_busy = function is_busy()
                 {
                     return retrying || Boolean(ajax.readyState % 4);
-                }
+                };
                 
                 ajax.orig_abort = ajax.abort;
                 
@@ -278,7 +276,7 @@ var G = (function ()
                     if (ajax.onerror) {
                         ajax.onerror();
                     }
-                }
+                };
                 
                 function parse_if_json()
                 {
@@ -478,6 +476,10 @@ var G = (function ()
                             /// Before evaluation, add the sourceURL so that debuggers can debug properly be matching the code to the correct file.
                             /// See https://blog.getfirebug.com/2009/08/11/give-your-eval-a-name-with-sourceurl/.
                             var code = that.evaler(res + "//# sourceURL=" + path);
+                            
+                            if (err) {
+                                console.log(err);
+                            }
                             
                             /// If the eval'ed code is a function, send it the context.
                             if (typeof code === "function") {
@@ -754,13 +756,13 @@ var G = (function ()
                 next_page = location.href;
             }
             
-            location = next_page;
+            window.location = next_page;
         };
         
         G.get_products = function ()
         {
             return G.parse_json(Cookies.get("p")) || {};
-        }
+        };
         
         G.set_login_cookie = function (products)
         {
@@ -830,7 +832,7 @@ var G = (function ()
         G.redirect_unlogged = function ()
         {
             if (!G.is_logged_in()) {
-                location = "/login/?r=" + encodeURIComponent(location.pathname + location.search + location.hash);
+                window.location = "/login/?r=" + encodeURIComponent(location.pathname + location.search + location.hash);
                 return true;
             }
         };
@@ -884,7 +886,7 @@ var G = (function ()
                     el = spin.spin().el;
                     
                     el.style.position = "fixed";
-                    document.body.appendChild(el)
+                    document.body.appendChild(el);
                     
                     window.addEventListener("resize", center_it);
                     
@@ -1048,16 +1050,15 @@ var G = (function ()
         
         /*! Cookies.js - 0.3.1; Copyright (c) 2013, Scott Hamper; http://www.opensource.org/licenses/MIT */
         /// Streamed lined by Greenfield Education.
-        (function (undefined) {
-            'use strict';
-        
+        (function (undefined)
+        {
             var Cookies = function (key, value, options) {
                 return arguments.length === 1 ?
                     Cookies.get(key) : Cookies.set(key, value, options);
             };
         
             Cookies.defaults = {
-                path: '/'
+                path: "/"
             };
             
             Cookies._document = document;
@@ -1093,18 +1094,18 @@ var G = (function ()
             };
         
             Cookies._isValidDate = function (date) {
-                return Object.prototype.toString.call(date) === '[object Date]' && !isNaN(date.getTime());
+                return Object.prototype.toString.call(date) === "[object Date]" && !isNaN(date.getTime());
             };
         
             Cookies._getExpiresDate = function (expires, now) {
                 now = now || new Date();
                 switch (typeof expires) {
-                    case 'number': expires = new Date(now.getTime() + expires * 1000); break;
-                    case 'string': expires = new Date(expires); break;
+                    case "number": expires = new Date(now.getTime() + expires * 1000); break;
+                    case "string": expires = new Date(expires); break;
                 }
         
                 if (expires && !Cookies._isValidDate(expires)) {
-                    throw new Error('`expires` parameter cannot be converted to a valid Date instance');
+                    throw new Error("`expires` parameter cannot be converted to a valid Date instance");
                 }
         
                 return expires;
@@ -1112,21 +1113,21 @@ var G = (function ()
         
             Cookies._generateCookieString = function (key, value, options) {
                 key = encodeURIComponent(key);
-                value = (value + '').replace(/[^!#$&-+\--:<-\[\]-~]/g, encodeURIComponent);
+                value = (value + "").replace(/[^!#$&-+\--:<-\[\]-~]/g, encodeURIComponent);
                 options = options || {};
         
-                var cookieString = key + '=' + value;
-                cookieString += options.path ? ';path=' + options.path : '';
-                cookieString += options.domain ? ';domain=' + options.domain : '';
-                cookieString += options.expires ? ';expires=' + options.expires.toUTCString() : '';
-                cookieString += options.secure ? ';secure' : '';
+                var cookieString = key + "=" + value;
+                cookieString += options.path ? ";path=" + options.path : "";
+                cookieString += options.domain ? ";domain=" + options.domain : "";
+                cookieString += options.expires ? ";expires=" + options.expires.toUTCString() : "";
+                cookieString += options.secure ? ";secure" : "";
         
                 return cookieString;
             };
         
             Cookies._getCookieObjectFromString = function (documentCookie) {
                 var cookieObject = {};
-                var cookiesArray = documentCookie ? documentCookie.split('; ') : [];
+                var cookiesArray = documentCookie ? documentCookie.split("; ") : [];
         
                 for (var i = 0; i < cookiesArray.length; i++) {
                     var cookieKvp = Cookies._getKeyValuePairFromCookieString(cookiesArray[i]);
@@ -1140,8 +1141,8 @@ var G = (function ()
             };
         
             Cookies._getKeyValuePairFromCookieString = function (cookieString) {
-                // "=" is a valid character in a cookie value according to RFC6265, so cannot `split('=')`
-                var separatorIndex = cookieString.indexOf('=');
+                // "=" is a valid character in a cookie value according to RFC6265, so cannot `split("=")`
+                var separatorIndex = cookieString.indexOf("=");
         
                 // IE omits the "=" when the cookie value is an empty string
                 separatorIndex = separatorIndex < 0 ? cookieString.length : separatorIndex;
@@ -1158,7 +1159,7 @@ var G = (function ()
             };
         
             Cookies._areEnabled = function () {
-                return Cookies.set('cookies.js', 1).get('cookies.js') === '1';
+                return Cookies.set("cookies.js", 1).get("cookies.js") === "1";
             };
             /// Removed enabled check. If you want to know, run Cookies._areEnabled().
         
