@@ -305,7 +305,7 @@ var G = (function ()
                 function query()
                 {
                     var method = typeof options.method === "string" ? options.method.toUpperCase() : "GET",
-                        message = options.message,
+                        message = typeof options.message === "object" ? G.make_params(options.message) : options.message,
                         timeout = options.timeout || 30000, /// Default to 30 seconds.
                         headers = options.headers || [],
                         csrf_token,
