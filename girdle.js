@@ -945,7 +945,7 @@ var G = (function ()
                     if (success) {
                         str = "Success";
                     } else {
-                        str = "There was an error.\nPlease reload the page or try again";
+                        str = "An error occurred.\nPlease reload the page, or try again.";
                     }
                 }
                 
