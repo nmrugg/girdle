@@ -111,6 +111,10 @@ var G = (function ()
                 }, i);
             }(0));
         },
+        escape_html: function escape_html(str)
+        {
+            return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+        },
     };
     
     /// Is this (probably) a browser?
