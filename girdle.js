@@ -123,7 +123,7 @@ var G = (function ()
         if (typeof window.document === "object") {
             G.cde = function create_dom_el(type, properties, events, children)
             {
-                var el = type === "documentFragment" ? document.createDocumentFragment() : document.createElement(type),
+                var el = (!type || type === "documentFragment") ? document.createDocumentFragment() : document.createElement(type),
                     prop_sub = {
                         c: "className",
                         t: "textContent",
