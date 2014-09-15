@@ -806,10 +806,15 @@ var G = (function ()
             Cookies.expire("p");
         };
         
-        G.set_login_link = function (sign_up_el, login_el, downloads_el, account_el)
+        G.set_menu_links = function (cart_el, login_el, downloads_el, account_el)
         {
+            var cart = G.parse_json(Cookies.get("cart"));
+            
+            if (cart && cart.products && cart.products.length) {
+                cart_el.textContent += " (" + cart.products.length + ")";
+                cart_el.classList.remove("hidden");
+            }
             if (G.is_logged_in()) {
-                sign_up_el.classList.add("hidden");
                 login_el.classList.add("hidden");
                 downloads_el.classList.remove("hidden");
                 account_el.classList.remove("hidden");
