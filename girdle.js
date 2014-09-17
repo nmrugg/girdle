@@ -44,12 +44,26 @@ var G = (function ()
             }
         },
         
-        format_money: function format_money(cents, free, currancy)
+        convert_currency: function convert_currency(money, currency)
+        {
+            ///NOTE: USD is the default.
+            if (currency && currency.abr !== "USD" && G.exchange_rates && G.exchange_rates[currency.abr]) {
+                /// Add the 2% exchange fee.
+                money = (money * 1.02) * G.exchange_rates[currency.abr];
+            }
+            
+            return money;
+        },
+        
+        format_money: function format_money(cents, free, currency)
         {
             var money = cents / 100;
             
-            if (!currancy) {
-                currancy = "$";
+            if (currency && G.exchange_rates && G.exchange_rates[currency.abr]) {
+                money = G.convert_currency(money, currency);
+            } else {
+                /// Clear currency so that that we make sure to default back to USD ($).
+                currency = null;
             }
             
             if (isNaN(money)) {
@@ -64,7 +78,11 @@ var G = (function ()
                 return free;
             }
             
-            return currancy + money;
+            if (currency) {
+                return currency.symbol1 + money + currency.symbol2;
+            } else {
+                return "$" + money;
+            }
         },
         
         get_random_int: function get_random_int(min, max)
