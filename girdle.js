@@ -776,6 +776,8 @@ var G = (function ()
             };
         
             Cookies.defaults = {
+                secure: location.protocol === "https:",
+                expires: 60 * 60 * 24 * 30 * 9, /// 9 months in milliseconds
                 path: "/"
             };
             
