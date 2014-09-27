@@ -44,12 +44,14 @@ var G = (function ()
             }
         },
         
-        convert_currency: function convert_currency(money, currency)
+        convert_currency: function convert_currency(money, currency, rates)
         {
+            rates = rates || G.exchange_rates;
+            
             ///NOTE: USD is the default.
-            if (currency && currency.abr !== "USD" && G.exchange_rates && G.exchange_rates[currency.abr]) {
+            if (currency && currency.abr !== "USD" && rates && rates[currency.abr]) {
                 /// Add the 2% exchange fee.
-                money = (money * 1.02) * G.exchange_rates[currency.abr];
+                money = (money * 1.02) * rates[currency.abr];
             }
             
             return money;
