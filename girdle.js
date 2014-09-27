@@ -55,6 +55,11 @@ var G = (function ()
             return money;
         },
         
+        /**
+         * cents    (integer)            The amount of money in cents
+         * free     (string)  (optional) The response if 0 (e.g., "FREE!")
+         * currenct (object)  (optional) An object describing the currency (e.g., {abr: "USD", sym_before: "$", sym_after: ""})
+         */
         format_money: function format_money(cents, free, currency)
         {
             var money = cents / 100;
@@ -79,7 +84,7 @@ var G = (function ()
             }
             
             if (currency) {
-                return currency.symbol1 + money + currency.symbol2;
+                return currency.sym_before + money + currency.sym_after;
             } else {
                 return "$" + money;
             }
