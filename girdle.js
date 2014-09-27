@@ -62,12 +62,14 @@ var G = (function ()
          * free     (string)  (optional) The response if 0 (e.g., "FREE!")
          * currenct (object)  (optional) An object describing the currency (e.g., {abr: "USD", sym_before: "$", sym_after: ""})
          */
-        format_money: function format_money(cents, free, currency)
+        format_money: function format_money(cents, free, currency, rates)
         {
             var money = cents / 100;
             
-            if (currency && G.exchange_rates && G.exchange_rates[currency.abr]) {
-                money = G.convert_currency(money, currency);
+            rates = rates || G.exchange_rates;
+            
+            if (currency && rates && rates[currency.abr]) {
+                money = G.convert_currency(money, currency, rates);
             } else {
                 /// Clear currency so that that we make sure to default back to USD ($).
                 currency = null;
