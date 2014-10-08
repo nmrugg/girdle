@@ -352,11 +352,10 @@ var G = (function ()
                     function onload()
                     {
                         var err;
-                        
                         ///NOTE: Really any 200 level request is good, but I don't think any one ever uses other codes.
                         if (ajax.status !== 200) {
                             /// Was their (probably) a CRSF token failure and easy_ajax is handleing CSRF?
-                            if (ajax.status === 403 && !options.csrf) {
+                            if (ajax.status === 403 && !options.csrf && !tried_new_csrf_token) {
                                 /// Make sure we don't try this more than once because that won't help.
                                 tried_new_csrf_token = true;
                                 /// First, clear the current bad cookie.
