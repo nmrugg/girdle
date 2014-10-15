@@ -247,6 +247,10 @@ var G = (function ()
             /// **************************
         }
         
+        try {
+            G.has_localStorage = typeof localStorage.getItem === "function";
+        } catch (e) {}
+        
         G.normalize_mouse_buttons = function normalize_mouse_buttons(e)
         {
             if (e) {
@@ -779,8 +783,7 @@ var G = (function ()
         (function (undefined)
         {
             var Cookies = function (key, value, options) {
-                return arguments.length === 1 ?
-                    Cookies.get(key) : Cookies.set(key, value, options);
+                return arguments.length === 1 ? Cookies.get(key) : Cookies.set(key, value, options);
             };
         
             Cookies.defaults = {
@@ -869,10 +872,10 @@ var G = (function ()
             };
         
             Cookies._getKeyValuePairFromCookieString = function (cookieString) {
-                // "=" is a valid character in a cookie value according to RFC6265, so cannot `split("=")`
+                /// "=" is a valid character in a cookie value according to RFC6265, so cannot `split("=")`
                 var separatorIndex = cookieString.indexOf("=");
         
-                // IE omits the "=" when the cookie value is an empty string
+                /// IE omits the "=" when the cookie value is an empty string
                 separatorIndex = separatorIndex < 0 ? cookieString.length : separatorIndex;
         
                 return {
