@@ -778,23 +778,39 @@ var G = (function ()
             };
         }());
         
-        /*! Cookies.js - 0.3.1; Copyright (c) 2013, Scott Hamper; http://www.opensource.org/licenses/MIT */
-        /// https://github.com/ScottHamper/Cookies
-        /// Streamed lined by Greenfield Education.
+
+        /**
+         * Cookies.js - 1.1.0
+         * https:///github.com/ScottHamper/Cookies
+         *
+         * This is free and unencumbered software released into the public domain.
+         *
+         * Streamed lined by Greenfield Education.
+         */
         (function (undefined)
         {
+            if (typeof window.document !== "object") {
+                throw new Error("Cookies.js requires a `window` with a `document` object");
+            }
+            
             var Cookies = function (key, value, options)
             {
-                return arguments.length === 1 ? Cookies.get(key) : Cookies.set(key, value, options);
+                return arguments.length === 1 ?
+                    Cookies.get(key) : Cookies.set(key, value, options);
             };
-        
+            
+            /// Allows for setter injection in unit tests
+            Cookies._document = window.document;
+            
+            /// Used to ensure cookie keys do not collide with
+            /// built-in `Object` properties
+            Cookies._cacheKeyPrefix = "cookey.";
+            
             Cookies.defaults = {
                 secure: location.protocol === "https:",
                 expires: 60 * 60 * 24 * 30 * 9, /// 9 months in milliseconds
                 path: "/"
             };
-            
-            Cookies._document = document;
             
             Cookies.get = function (key)
             {
@@ -802,7 +818,7 @@ var G = (function ()
                     Cookies._renewCache();
                 }
                 
-                return Cookies._cache[key];
+                return Cookies._cache[Cookies._cacheKeyPrefix + key];
             };
             
             Cookies.set = function (key, value, options)
@@ -852,10 +868,11 @@ var G = (function ()
             
             Cookies._generateCookieString = function (key, value, options)
             {
-                key = encodeURIComponent(key);
+                key = key.replace(/[^#$&+\^`|]/g, encodeURIComponent);
+                key = key.replace(/\(/g, "%28").replace(/\)/g, "%29");
                 value = (value + "").replace(/[^!#$&-+\--:<-\[\]-~]/g, encodeURIComponent);
                 options = options || {};
-        
+                
                 var cookieString = key + "=" + value;
                 cookieString += options.path ? ";path=" + options.path : "";
                 cookieString += options.domain ? ";domain=" + options.domain : "";
@@ -865,20 +882,20 @@ var G = (function ()
                 return cookieString;
             };
             
-            Cookies._getCookieObjectFromString = function (documentCookie)
+            Cookies._getCacheFromString = function (documentCookie)
             {
-                var cookieObject = {};
+                var cookieCache = {};
                 var cookiesArray = documentCookie ? documentCookie.split("; ") : [];
                 
-                for (var i = 0; i < cookiesArray.length; i++) {
+                for (var i = 0; i < cookiesArray.length; i += 1) {
                     var cookieKvp = Cookies._getKeyValuePairFromCookieString(cookiesArray[i]);
                     
-                    if (cookieObject[cookieKvp.key] === undefined) {
-                        cookieObject[cookieKvp.key] = cookieKvp.value;
+                    if (cookieCache[Cookies._cacheKeyPrefix + cookieKvp.key] === undefined) {
+                        cookieCache[Cookies._cacheKeyPrefix + cookieKvp.key] = cookieKvp.value;
                     }
                 }
                 
-                return cookieObject;
+                return cookieCache;
             };
             
             Cookies._getKeyValuePairFromCookieString = function (cookieString)
@@ -897,14 +914,18 @@ var G = (function ()
             
             Cookies._renewCache = function ()
             {
-                Cookies._cache = Cookies._getCookieObjectFromString(Cookies._document.cookie);
+                Cookies._cache = Cookies._getCacheFromString(Cookies._document.cookie);
                 Cookies._cachedDocumentCookie = Cookies._document.cookie;
             };
             
             Cookies._areEnabled = function ()
             {
-                return Cookies.set("cookies.js", 1).get("cookies.js") === "1";
+                var testKey = "cookies.js";
+                var areEnabled = Cookies.set(testKey, 1).get(testKey) === "1";
+                Cookies.expire(testKey);
+                return areEnabled;
             };
+            
             /// Removed enabled check. If you want to know, run Cookies._areEnabled().
         
             window.Cookies = Cookies;
