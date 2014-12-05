@@ -821,6 +821,7 @@ var G = (function ()
                 return Cookies._cache[Cookies._cacheKeyPrefix + key];
             };
             
+            ///NOTE: options.expires is in seconds.
             Cookies.set = function (key, value, options)
             {
                 options = Cookies._getExtendedOptions(options);
