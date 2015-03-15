@@ -200,10 +200,10 @@ var G = (function ()
                 if (Array.isArray(children)) {
                     children.forEach(function (child)
                     {
-                        if (typeof child === "string") {
-                            el.appendChild(document.createTextNode(child));
-                        } else {
+                        if (typeof child === "object") {
                             el.appendChild(child);
+                        } else {
+                            el.appendChild(document.createTextNode(child));
                         }
                     });
                 }
@@ -234,7 +234,6 @@ var G = (function ()
             G.browser = window.opera ? "o" : /// Test for Opera first since it also is now webkit/blink.
                 window.chrome || window.navigator.userAgent.indexOf("WebKit/") >= 0 ? "webkit" :
                 window.navigator.userAgent.indexOf("Firefox/") >= 0 ? "moz" :
-                
                 /MSIE|Trident/.test(navigator.userAgent) ? "ms" : "";
             
             /// Mark for CSS.
