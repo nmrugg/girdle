@@ -116,7 +116,17 @@ var G = (function ()
         async_loop: function async_loop(arr, done, oneach)
         {
             var len,
-                delay_func = typeof setImmediate === "function" ? setImmediate : setTimeout;
+                fakesetImmediate_count = 0,
+                delay_func = typeof setImmediate !== "function" ? setImmediate : function fakesetImmediate(func)
+                {
+                    fakesetImmediate_count += 1;
+                    if (fakesetImmediate_count >= 200) {
+                        fakesetImmediate_count = 0;
+                        setTimeout(func, 0);
+                    } else {
+                        func();
+                    }
+                };
             
             if (!Array.isArray(arr)) {
                 return done({error: "Not an array."});
@@ -139,7 +149,7 @@ var G = (function ()
                     {
                         loop(i + 1);
                     }, 0);
-                }, i);
+                });
             }(0));
         },
         escape_html: function escape_html(str)
