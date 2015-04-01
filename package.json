@@ -1,7 +1,7 @@
 {
   "name": "girdle",
   "description": "A JS utility belt",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": {
     "name": "Nathan Rugg",
     "email": "nmrugg@gmail.com"
