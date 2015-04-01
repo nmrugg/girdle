@@ -115,7 +115,8 @@ var G = (function ()
         },
         async_loop: function async_loop(arr, done, oneach)
         {
-            var len;
+            var len,
+                delay_func = typeof setImmediate === "function" ? setImmediate : setTimeout;
             
             if (!Array.isArray(arr)) {
                 return done({error: "Not an array."});
@@ -134,7 +135,10 @@ var G = (function ()
                 
                 oneach(arr[i], function next()
                 {
-                    loop(i + 1);
+                    delay_func(function ()
+                    {
+                        loop(i + 1);
+                    }, 0);
                 }, i);
             }(0));
         },
@@ -355,7 +359,7 @@ var G = (function ()
                     function onload()
                     {
                         var err;
-                        ///NOTE: Really any 200 level request is good, but I don't think any one ever uses other codes.
+                        ///NOTE: Really any 200 level request is good, but I don't think anyone ever uses other codes.
                         if (ajax.status !== 200) {
                             /// Was their (probably) a CRSF token failure and easy_ajax is handleing CSRF?
                             if (ajax.status === 403 && !options.csrf && !tried_new_csrf_token) {
