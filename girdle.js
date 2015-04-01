@@ -148,8 +148,8 @@ var G = (function ()
                     delay_func(function ()
                     {
                         loop(i + 1);
-                    }, 0);
-                });
+                    });
+                }, i);
             }(0));
         },
         escape_html: function escape_html(str)
