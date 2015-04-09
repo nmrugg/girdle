@@ -117,7 +117,7 @@ var G = (function ()
         {
             var len,
                 fakesetImmediate_count = 0,
-                delay_func = typeof setImmediate !== "function" ? setImmediate : function fakesetImmediate(func)
+                delay_func = typeof setImmediate === "function" ? setImmediate : function fakesetImmediate(func)
                 {
                     fakesetImmediate_count += 1;
                     if (fakesetImmediate_count >= 200) {
