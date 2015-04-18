@@ -113,14 +113,14 @@ var G = (function ()
                 return JSON.parse(str);
             } catch (e) {}
         },
-        loop: function loop(arr, done, oneach)
+        loop: function loop(arr, done, oneach, always_async)
         {
             var len,
                 fakesetImmediate_count = 0,
                 delay_func = typeof setImmediate === "function" ? setImmediate : function fakesetImmediate(func)
                 {
                     fakesetImmediate_count += 1;
-                    if (fakesetImmediate_count >= 200) {
+                    if (always_async || fakesetImmediate_count >= 200) {
                         fakesetImmediate_count = 0;
                         setTimeout(func, 0);
                     } else {
@@ -131,6 +131,7 @@ var G = (function ()
             /// Optionally take an object like {oneach: function (el, next, i) {}, done: function (err) {}}
             if (done && typeof done === "object") {
                 oneach = done.oneach;
+                always_async = done.always_async;
                 ///NOTE: This must be last.
                 done = done.done;
             }
