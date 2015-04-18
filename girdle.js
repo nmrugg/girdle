@@ -113,7 +113,7 @@ var G = (function ()
                 return JSON.parse(str);
             } catch (e) {}
         },
-        async_loop: function async_loop(arr, done, oneach)
+        loop: function loop(arr, done, oneach)
         {
             var len,
                 fakesetImmediate_count = 0,
@@ -167,6 +167,8 @@ var G = (function ()
         }
 
     };
+    ///TODO: Depriciate and remove.
+    G.async_loop = G.loop;
     
     /// Is this (probably) a browser?
     if (typeof window === "object") {
