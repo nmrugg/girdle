@@ -144,23 +144,26 @@ var G = (function ()
             
             len = arr.length;
             
-            (function loop(i)
+            delay_func(function ()
             {
-                if (i >= len) {
-                    if (done) {
-                        return done();
-                    }
-                    return;
-                }
-                
-                oneach(arr[i], function next()
+                (function loop(i)
                 {
-                    delay_func(function ()
+                    if (i >= len) {
+                        if (done) {
+                            return done();
+                        }
+                        return;
+                    }
+                    
+                    oneach(arr[i], function next()
                     {
-                        loop(i + 1);
-                    });
-                }, i);
-            }(0));
+                        delay_func(function ()
+                        {
+                            loop(i + 1);
+                        });
+                    }, i);
+                }(0));
+            });
         },
         escape_html: function escape_html(str)
         {
