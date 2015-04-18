@@ -126,14 +126,13 @@ var G = (function ()
                     } else {
                         func();
                     }
-                },
-                o; /// options
+                };
             
             /// Optionally take an object like {oneach: function (el, next, i) {}, done: function (err) {}}
             if (typeof done === "object") {
-                o = done;
-                done = o.done;
-                oneach = o.oneach;
+                oneach = done.oneach;
+                ///NOTE: This must be last.
+                done = done.done;
             }
             
             if (!Array.isArray(arr)) {
