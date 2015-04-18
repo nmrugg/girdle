@@ -129,7 +129,7 @@ var G = (function ()
                 };
             
             /// Optionally take an object like {oneach: function (el, next, i) {}, done: function (err) {}}
-            if (typeof done === "object") {
+            if (done && typeof done === "object") {
                 oneach = done.oneach;
                 ///NOTE: This must be last.
                 done = done.done;
