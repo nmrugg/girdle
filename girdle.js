@@ -156,6 +156,16 @@ var G = (function ()
         {
             return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
         },
+        supplant: function supplant(obj, template)
+        {
+            /// Match all matching curly brackets, and send them to the function.
+            return template.replace(/{([^{}]+)}/g, function onreplace(whole, inside)
+            {
+                var data = obj[inside];
+                return typeof data !== "undefined" ? data : whole;
+            });
+        }
+
     };
     
     /// Is this (probably) a browser?
