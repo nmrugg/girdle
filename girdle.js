@@ -129,7 +129,10 @@ var G = (function ()
                 };
             
             if (!Array.isArray(arr)) {
-                return done({error: "Not an array."});
+                if (done) {
+                    done(new Error("Not an array."));
+                }
+                return;
             }
             
             len = arr.length;
