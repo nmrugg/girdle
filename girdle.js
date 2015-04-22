@@ -7,7 +7,7 @@ var G = (function ()
     "use strict";
     
     var G = {
-        array_remove: function array_remove(arr, i, order_irrelevant)
+        remove: function remove(arr, i, order_irrelevant)
         {
             var len = arr.length;
             
@@ -93,7 +93,7 @@ var G = (function ()
             }
         },
         
-        get_random_int: function get_random_int(min, max)
+        rand: function rand(min, max)
         {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         },
@@ -180,6 +180,10 @@ var G = (function ()
         }
 
     };
+    ///TODO: Depriciate and remove.
+    G.get_random_int = G.rand;
+    ///TODO: Depriciate and remove.
+    G.array_remove = G.remove;
     ///TODO: Depriciate and remove.
     G.async_loop = G.loop;
     
@@ -489,7 +493,7 @@ var G = (function ()
              * @example include("/path/to/script.js", {needed_var: var_from_the_closure}, function () {}, 20000, false);
              * @param   path     (string)              The location of the JavaScript to load.
              * @param   context  (object)   (optional) The variable to send to the included JavaScript.
-             * @param   callback (function) (optional) A function to call after the code has been loaded.
+             * @param   cb       (function) (optional) A function to call after the code has been loaded.
              * @param   timeout  (number)   (optional) How long to wait before giving up on the script to load (in milliseconds).
              *                                         A falsey value (such as 0 or FALSE) disables timing out.         (Default is 10,000 milliseconds.)
              * @param   retry    (boolean)  (optional) Whether or not to retry loading the script if a timeout occurs.  (Default is TRUE.)
@@ -520,7 +524,7 @@ var G = (function ()
                 /// Prevent any eval'ed code from being able to modify the evaler() function.
                 Object.freeze(this);
                 
-                function include_one(path, callback, context, timeout, retry)
+                function include_one(path, cb, context, timeout, retry)
                 {
                     var clean_path = path.replace(/(\?[^?]+)?(\#[^#]+)?$/, "").toLowerCase(),
                         fallback;
@@ -528,10 +532,10 @@ var G = (function ()
                     function done()
                     {
                         clearTimeout(fallback);
-                        if (callback) {
-                            callback();
+                        if (cb) {
+                            cb();
                             /// Make sure it can't be called twice.
-                            callback = null;
+                            cb = null;
                         }
                     }
                     
@@ -562,14 +566,14 @@ var G = (function ()
                                 code(context);
                             }
                             
-                            if (callback) {
-                                callback();
+                            if (cb) {
+                                cb();
                             }
                         }, timeout, retry);
                     }
                 }
                 
-                return function include(path, callback, context, timeout, retry)
+                return function include(path, cb, context, timeout, retry)
                 {
                     var len;
                     
@@ -582,8 +586,8 @@ var G = (function ()
                     (function loop(i)
                     {
                         if (i === len) {
-                            if (callback) {
-                                callback();
+                            if (cb) {
+                                cb();
                             }
                             return;
                         }
@@ -695,11 +699,11 @@ var G = (function ()
                 /**
                  * Add one or more events to the event cue.
                  *
-                 * @example system.event.attach("contentAddedAbove", function (e) {});
-                 * @example system.event.attach("contentAddedAbove", function (e) {}, true);
-                 * @example system.event.attach(["contentAddedAbove", "contentRemovedAbove"], function (e) {});
-                 * @example system.event.attach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, true);
-                 * @example system.event.attach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, [true, false]);
+                 * @example G.event.attach("contentAddedAbove", function (e) {});
+                 * @example G.event.attach("contentAddedAbove", function (e) {}, true);
+                 * @example G.event.attach(["contentAddedAbove", "contentRemovedAbove"], function (e) {});
+                 * @example G.event.attach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, true);
+                 * @example G.event.attach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, [true, false]);
                  * @param   name (string || array)             The name of the event or an array of names of events.
                  * @param   func (function)                    The function to call when the event it triggered.
                  * @param   once (boolean || array) (optional) Whether or not to detach this function after being executed once. If "name" is an array, then "once" can also be an array of booleans.
@@ -737,9 +741,9 @@ var G = (function ()
                 /**
                  * Remove an event from the event cue.
                  *
-                 * @example system.event.detach("contentAddedAbove", function (e) {});
-                 * @example system.event.detach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, [true, false]);
-                 * @example system.event.detach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, true);
+                 * @example G.event.detach("contentAddedAbove", function (e) {});
+                 * @example G.event.detach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, [true, false]);
+                 * @example G.event.detach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, true);
                  * @param   name (string || array)             The name of the event or an array of names of events.
                  * @param   func (function)                    The function that was attached to the specified event.
                  * @param   once (boolean || array) (optional) Whether or not to detach this function after being executed once. If "name" is an array, then "once" can also be an array of booleans.
@@ -759,7 +763,7 @@ var G = (function ()
                         for (i = func_list[name].length - 1; i >= 0; i -= 1) {
                             ///NOTE: Both func and once must match.
                             if (func_list[name][i].func === func && func_list[name][i].once === once) {
-                                G.array_remove(func_list[name], i);
+                                G.remove(func_list[name], i);
                                 /// Since only one event should be removed at a time, we can end now.
                                 return;
                             }
@@ -803,7 +807,7 @@ var G = (function ()
                             
                             /// Is this function only supposed to be executed once?
                             if (!func_list[name][i] || func_list[name][i].once) {
-                                G.array_remove(func_list[name], i);
+                                G.remove(func_list[name], i);
                             }
                             
                             /// Was e.stopPropagation() called?
