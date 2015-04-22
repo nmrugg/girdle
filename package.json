@@ -16,6 +16,10 @@
       "url": "http://nate.mit-license.org/"
     }
   ],
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/nmrugg/girdle.git"
+  },
   "readmeFilename": "readme.md",
   "dependencies": {}
 }
