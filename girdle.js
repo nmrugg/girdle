@@ -22,20 +22,19 @@ var G = (function ()
                 arr.pop();
             /// If the second to last element is to be removed, we can just pop off the last one and replace the second to last one with it.
             ///NOTE: This is always the fastest method and it is orderly too.
-            } else if (i === len - 2) {
-                arr[len - 2] = arr.pop();
-            /// Can use we the faster (but unorderly) remove method?
-            } else if (order_irrelevant || i === len - 2) {
+            /// Or can use we the faster (but unorderly) method?
+            } else if (i === len - 2 || order_irrelevant) {
                 if (i >= 0 && i < len) {
                     /// This works by popping off the last array element and using that to replace the element to be removed.
                     arr[i] = arr.pop();
                 }
             } else {
                 /// The first element can be quickly shifted off.
+                ///NOTE: This is faster than splice() but slower than pop().
                 if (i === 0) {
                     arr.shift();
                 /// Ignore numbers that are still negative.
-                ///NOTE: By default, if a number is below the total array count (e.g., array_remove([0,1], -3)), splice() will remove the first element.
+                ///NOTE: By default, if a number is below the total array count (e.g., G.remove([0,1], -3)), splice() will remove the first element.
                 ///      This behavior is undesirable because it is unexpected.
                 } else if (i > 0) {
                     /// Use the orderly, but slower, splice method.
