@@ -323,43 +323,9 @@ var G = (function ()
              *   headers (an object or array of objects)
              *      [{name: "value"}]
              */
-            G.easy_ajax = function easy_ajax(path, options, callback)
+            G.ajax = (function eac()
             {
-                var aborted,
-                    ajax = new window.XMLHttpRequest(),
-                    retrying,
-                    retry_timer,
-                    query_timer,
-                    tried_new_csrf_token;
-                
-                ajax.is_busy = function is_busy()
-                {
-                    return retrying || Boolean(ajax.readyState % 4);
-                };
-                
-                ajax.orig_abort = ajax.abort;
-                
-                ajax.abort = function better_abort()
-                {
-                    if (retrying) {
-                        clearTimeout(retry_timer);
-                        retrying = false;
-                    }
-                    
-                    if (ajax.is_busy()) {
-                        /// Stop it from retrying from a timeout.
-                        clearTimeout(query_timer);
-                        aborted = true;
-                        ajax.orig_abort();
-                    }
-                    
-                    /// Make sure a callback is called.
-                    if (ajax.onerror) {
-                        ajax.onerror();
-                    }
-                };
-                
-                function parse_if_json()
+                function parse_if_json(ajax)
                 {
                     var res,
                         type;
@@ -383,109 +349,155 @@ var G = (function ()
                     return res;
                 }
                 
-                function query()
+                return function ajax_func(path, options, cb)
                 {
-                    var method = typeof options.method === "string" ? options.method.toUpperCase() : "GET",
-                        message = typeof options.message === "object" ? G.make_params(options.message) : options.message,
-                        timeout = options.timeout || 30000, /// Default to 30 seconds.
-                        headers = options.headers || [],
-                        csrf_token,
-                        post_message,
-                        csrf_cookie = options.csrf_cookie || "_csrf";
+                    var aborted,
+                        ajax = new window.XMLHttpRequest(),
+                        retrying,
+                        retry_timer,
+                        query_timer,
+                        tried_new_csrf_token;
                     
-                    aborted = false;
+                    /// Make options optional.
+                    if (typeof cb === "undefined" && typeof options === "function") {
+                        cb = options;
+                        options = {};
+                    }
                     
-                    function onload()
+                    ajax.is_busy = function is_busy()
                     {
-                        var err;
-                        ///NOTE: Really any 200 level request is good, but I don't think anyone ever uses other codes.
-                        if (ajax.status !== 200) {
-                            /// Was their (probably) a CRSF token failure and easy_ajax is handleing CSRF?
-                            if (ajax.status === 403 && !options.csrf && !tried_new_csrf_token) {
-                                /// Make sure we don't try this more than once because that won't help.
-                                tried_new_csrf_token = true;
-                                /// First, clear the current bad cookie.
-                                Cookies.expire(csrf_cookie);
-                                /// Next, try to get another cookie and retry the request.
-                                ///TODO: Make an API or something for this.
-                                G.easy_ajax("/get_csrf", {}, query);
-                                /// Stop processing anything else and wait to see if getting a new CSRF token cookie fixes things.
+                        return retrying || Boolean(ajax.readyState % 4);
+                    };
+                    
+                    ajax.orig_abort = ajax.abort;
+                    
+                    ajax.abort = function better_abort()
+                    {
+                        if (retrying) {
+                            clearTimeout(retry_timer);
+                            retrying = false;
+                        }
+                        
+                        if (ajax.is_busy()) {
+                            /// Stop it from retrying from a timeout.
+                            clearTimeout(query_timer);
+                            aborted = true;
+                            ajax.orig_abort();
+                        }
+                        
+                        /// Make sure a callback is called.
+                        if (ajax.onerror) {
+                            ajax.onerror();
+                        }
+                    };
+                    
+                    function query()
+                    {
+                        var method = typeof options.method === "string" ? options.method.toUpperCase() : "GET",
+                            message = typeof options.message === "object" ? G.make_params(options.message) : options.message,
+                            timeout = options.timeout || 30000, /// Default to 30 seconds.
+                            headers = options.headers || [],
+                            csrf_token,
+                            post_message,
+                            csrf_cookie = options.csrf_cookie || "_csrf";
+                        
+                        aborted = false;
+                        
+                        function onload()
+                        {
+                            var err;
+                            ///NOTE: Really any 200 level request is good, but I don't think anyone ever uses other codes.
+                            if (ajax.status !== 200) {
+                                /// Was their (probably) a CRSF token failure and we are handleing CSRF?
+                                if (ajax.status === 403 && !options.csrf && !tried_new_csrf_token) {
+                                    /// Make sure we don't try this more than once because that won't help.
+                                    tried_new_csrf_token = true;
+                                    /// First, clear the current bad cookie.
+                                    Cookies.expire(csrf_cookie);
+                                    /// Next, try to get another cookie and retry the request.
+                                    ///TODO: Make an API or something for this.
+                                    G.ajax("/get_csrf", {}, query);
+                                    /// Stop processing anything else and wait to see if getting a new CSRF token cookie fixes things.
+                                    return;
+                                }
+                                
+                                err = {status: ajax.status, aborted: aborted};
+                            }
+                            
+                            if (err && options.retry && !aborted) {
+                                retry_timer = setTimeout(query, options.retry_interval || 2000);
                                 return;
                             }
                             
-                            err = {status: ajax.status, aborted: aborted};
+                            if (cb) {
+                                /// query() is sent back to let the caller retry if desired.
+                                /// ajax is also sent back because it can offer extra data, like ajax.status.
+                                cb(err, parse_if_json(ajax), query, ajax);
+                                /// Make sure it's not called twice. For example, if both onerror and onload are called.
+                                cb = null;
+                            }
                         }
                         
-                        if (err && options.retry && !aborted) {
-                            retry_timer = setTimeout(query, options.retry_interval || 2000);
-                            return;
+                        if (method.toUpperCase() === "GET") {
+                            /// GET requests need the message appended to the path.
+                            ajax.open(method, path + (message ? "?" + message : ""));
+                        } else {
+                            /// POST requests send the message later on (with .send()).
+                            ajax.open(method, path);
+                            post_message = message;
                         }
                         
-                        if (callback) {
-                            /// query() is sent back to let the caller retry if desired.
-                            /// ajax is also sent back because it can offer extra data, like ajax.status.
-                            callback(err, parse_if_json(ajax), query, ajax);
-                            /// Make sure it's not called twice. For example, if both onerror and onload are called.
-                            callback = null;
+                        if (options.responseType) {
+                            ajax.responseType = options.responseType;
                         }
-                    }
-                    
-                    if (method.toUpperCase() === "GET") {
-                        /// GET requests need the message appended to the path.
-                        ajax.open(method, path + (message ? "?" + message : ""));
-                    } else {
-                        /// POST requests send the message later on (with .send()).
-                        ajax.open(method, path);
-                        post_message = message;
-                    }
-                    
-                    if (options.responseType) {
-                        ajax.responseType = options.responseType;
-                    }
-                    
-                    /// Prepare headers.
-                    if (!Array.isArray(headers)) {
-                        headers = [headers];
-                    }
-                    
-                    /// Set default header.
-                    headers.push({name: "Content-Type", value: "application/x-www-form-urlencoded"});
-                    
-                    /// Set CSRF token.
-                    if (!options.csrf && method !== "GET") {
-                        csrf_token = Cookies.get(csrf_cookie);
-                    } else {
-                        csrf_token = options.csrf;
-                    }
-                    if (csrf_token) {
-                        headers.push({name: "x-csrf-token", value: csrf_token});
-                    }
-                    
-                    headers.forEach(function oneach(header)
-                    {
-                        ajax.setRequestHeader(header.name, header.value);
-                    });
-                    
-                    
-                    ajax.onerror = onload;
-                    ajax.onload  = onload;
-                    
-                    ajax.send(post_message);
-                    
-                    if (timeout) {
-                        query_timer = setTimeout(function timeout()
+                        
+                        /// Prepare headers.
+                        if (!Array.isArray(headers)) {
+                            headers = [headers];
+                        }
+                        
+                        /// Set default header.
+                        headers.push({name: "Content-Type", value: "application/x-www-form-urlencoded"});
+                        
+                        /// Set CSRF token.
+                        if (!options.csrf && method !== "GET") {
+                            csrf_token = Cookies.get(csrf_cookie);
+                        } else {
+                            csrf_token = options.csrf;
+                        }
+                        if (csrf_token) {
+                            headers.push({name: "x-csrf-token", value: csrf_token});
+                        }
+                        
+                        headers.forEach(function oneach(header)
                         {
-                            ajax.abort();
-                        }, timeout);
+                            ajax.setRequestHeader(header.name, header.value);
+                        });
+                        
+                        
+                        ajax.onerror = onload;
+                        ajax.onload  = onload;
+                        
+                        ajax.send(post_message);
+                        
+                        if (timeout) {
+                            query_timer = setTimeout(function timeout()
+                            {
+                                ajax.abort();
+                            }, timeout);
+                        }
                     }
-                }
-                
-                options = options || {};
-                
-                query();
-                
-                return ajax;
-            };
+                    
+                    options = options || {};
+                    
+                    query();
+                    
+                    return ajax;
+                };
+            }());
+            
+            ///TODO: Depriciate and remove.
+            G.easy_ajax = G.ajax;
             
             /**
              * Load some Javascript and optionally send it some variables from the closure.
@@ -550,7 +562,7 @@ var G = (function ()
                             }, {load: done}
                         ));
                     } else { /// JS
-                        G.easy_ajax(path, {method: "GET"}, function (err, res)
+                        G.ajax(path, function (err, res)
                         {
                             /// Evaluate the code in a safe environment.
                             /// Before evaluation, add the sourceURL so that debuggers can debug properly be matching the code to the correct file.
