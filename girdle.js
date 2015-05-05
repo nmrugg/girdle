@@ -633,13 +633,13 @@ var G = (function ()
                     if (sep2[1]) {
                         sep2[1] = decodeURIComponent(sep2[1]);
                     }
-                    if (params[sep2[0]]) {
+                    if (typeof params[sep2[0]] === "undefined") {
+                        params[sep2[0]] = sep2[1];
+                    } else {
                         if (typeof params[sep2[0]] !== "object") {
                             params[sep2[0]] = [params[sep2[0]]];
                         }
                         params[sep2[0]].push(sep2[1]);
-                    } else {
-                        params[sep2[0]] = sep2[1];
                     }
                 }
             }
@@ -668,13 +668,13 @@ var G = (function ()
                             value = form.elements[i].value;
                         }
                         /// If the element already exists, turn it into an array.
-                        if (data.obj[form.elements[i].name]) {
+                        if (typeof data.obj[form.elements[i].name] === "undefined") {
+                            data.obj[form.elements[i].name] = value;
+                        } else {
                             if (!Array.isArray(data.obj[form.elements[i].name])) {
                                 data.obj[form.elements[i].name] = [data.obj[form.elements[i].name]];
                             }
                             data.obj[form.elements[i].name].push(value);
-                        } else {
-                            data.obj[form.elements[i].name] = value;
                         }
                         data.arr[i] = form.elements[i];
                     }
