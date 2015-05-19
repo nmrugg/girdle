@@ -178,7 +178,6 @@ var G = (function ()
                 return typeof data !== "undefined" ? data : whole;
             });
         }
-
     };
     ///TODO: Depriciate and remove.
     G.get_random_int = G.rand;
@@ -186,6 +185,135 @@ var G = (function ()
     G.array_remove = G.remove;
     ///TODO: Depriciate and remove.
     G.async_loop = G.loop;
+    
+    G.events = (function ()
+    {
+        var func_list = {};
+        
+        return {
+            /**
+              * Add one or more events to the event cue.
+              *
+              * @example G.event.attach("contentAddedAbove", function (e) {});
+              * @example G.event.attach("contentAddedAbove", function (e) {}, true);
+              * @example G.event.attach(["contentAddedAbove", "contentRemovedAbove"], function (e) {});
+              * @example G.event.attach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, true);
+              * @example G.event.attach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, [true, false]);
+              * @param   name (string || array)             The name of the event or an array of names of events.
+              * @param   func (function)                    The function to call when the event it triggered.
+              * @param   once (boolean || array) (optional) Whether or not to detach this function after being executed once. If "name" is an array, then "once" can also be an array of booleans.
+              * @return  NULL
+              * @note    If func(e) calls e.stopPropagation(), it will stop further event propagation.
+              * @todo    Determine the value of adding a run_once property that removes function after the first run.
+              */
+            attach: function attach(name, func, once)
+            {
+                var arr_len,
+                    i;
+                
+                /// Should the function be attached to multiple events?
+                if (name instanceof Array) {
+                    arr_len = name.length;
+                    for (i = 0; i < arr_len; i += 1) {
+                        /// If "once" is an array, then use the elements of the array.
+                        /// If "once" is not an array, then just send the "once" variable each time.
+                        this.attach(name[i], func, once instanceof Array ? once[i] : once);
+                    }
+                } else {
+                    if (typeof func === "function") {
+                        /// Has a function been previously attached to this event? If not, create a function to handle them.
+                        if (!func_list[name]) {
+                            func_list[name] = [];
+                        }
+                        /// Since we may remove events while calling them, it's easiest to store the array in reverse.
+                        func_list[name].unshift({
+                            func: func,
+                            once: once
+                        });
+                    }
+                }
+            },
+            /**
+              * Remove an event from the event cue.
+              *
+              * @example G.event.detach("contentAddedAbove", function (e) {});
+              * @example G.event.detach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, [true, false]);
+              * @example G.event.detach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, true);
+              * @param   name (string || array)             The name of the event or an array of names of events.
+              * @param   func (function)                    The function that was attached to the specified event.
+              * @param   once (boolean || array) (optional) Whether or not to detach this function after being executed once. If "name" is an array, then "once" can also be an array of booleans.
+              */
+            detach: function detach(name, func, once)
+            {
+                var i;
+                
+                /// Are there multiple events to remove?
+                if (name instanceof Array) {
+                    for (i = name.length - 1; i >= 0; i -= 1) {
+                        /// If "once" is an array, then use the elements of the array.
+                        /// If "once" is not an array, then just send the "once" variable each time.
+                        this.detach(name[i], func, once instanceof Array ? once[i] : once);
+                    }
+                } else if (func_list[name]) {
+                    for (i = func_list[name].length - 1; i >= 0; i -= 1) {
+                        ///NOTE: Both func and once must match.
+                        if (func_list[name][i].func === func && func_list[name][i].once === once) {
+                            G.remove(func_list[name], i);
+                            /// Since only one event should be removed at a time, we can end now.
+                            return;
+                        }
+                    }
+                }
+            },
+            /**
+              * Trigger the functions attached to an event.
+              *
+              * @param  name (string) The name of the event to trigger.
+              * @param  e    (object) The event object sent to the called functions.
+              * @return NULL
+              */
+            trigger: function trigger(name, e)
+            {
+                var i,
+                    stop_propagation;
+                
+                /// Does this event have any functions attached to it?
+                if (func_list[name]) {
+                    if (!G.is_object(e)) {
+                        /// If the event object was not specificed, it needs to be created in order to attach stopPropagation() to it.
+                        e = {};
+                    }
+                    
+                    /// If an attached function runs this function, it will stop calling other functions.
+                    e.stopPropagation = function ()
+                    {
+                        stop_propagation = true;
+                    };
+                    
+                    /// Execute the functions in reverse order so that we can remove them without throwing the order off.
+                    for (i = func_list[name].length - 1; i >= 0; i -= 1) {
+                        ///NOTE: It would be a good idea to use a try/catch to prevent errors in events from preventing the code that called the
+                        ///      event from firing.  However, there would need to be some sort of error handling. Sending a message back to the
+                        ///      server would be a good feature.
+                        /// Check to make sure the function actually exists.
+                        if (func_list[name][i]) {
+                            func_list[name][i].func(e);
+                        }
+                        
+                        /// Is this function only supposed to be executed once?
+                        if (!func_list[name][i] || func_list[name][i].once) {
+                            G.remove(func_list[name], i);
+                        }
+                        
+                        /// Was e.stopPropagation() called?
+                        if (stop_propagation) {
+                            break;
+                        }
+                    }
+                }
+            }
+        };
+    }());
     
     /// Is this (probably) a browser?
     if (typeof window === "object") {
@@ -701,137 +829,6 @@ var G = (function ()
             }
             return str;
         };
-        
-        ///NOTE: Even though this doesn't need to be client-side only, Node already has an event system.
-        G.events = (function ()
-        {
-            var func_list = {};
-            
-            return {
-                /**
-                 * Add one or more events to the event cue.
-                 *
-                 * @example G.event.attach("contentAddedAbove", function (e) {});
-                 * @example G.event.attach("contentAddedAbove", function (e) {}, true);
-                 * @example G.event.attach(["contentAddedAbove", "contentRemovedAbove"], function (e) {});
-                 * @example G.event.attach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, true);
-                 * @example G.event.attach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, [true, false]);
-                 * @param   name (string || array)             The name of the event or an array of names of events.
-                 * @param   func (function)                    The function to call when the event it triggered.
-                 * @param   once (boolean || array) (optional) Whether or not to detach this function after being executed once. If "name" is an array, then "once" can also be an array of booleans.
-                 * @return  NULL
-                 * @note    If func(e) calls e.stopPropagation(), it will stop further event propagation.
-                 * @todo    Determine the value of adding a run_once property that removes function after the first run.
-                 */
-                attach: function attach(name, func, once)
-                {
-                    var arr_len,
-                        i;
-                    
-                    /// Should the function be attached to multiple events?
-                    if (name instanceof Array) {
-                        arr_len = name.length;
-                        for (i = 0; i < arr_len; i += 1) {
-                            /// If "once" is an array, then use the elements of the array.
-                            /// If "once" is not an array, then just send the "once" variable each time.
-                            this.attach(name[i], func, once instanceof Array ? once[i] : once);
-                        }
-                    } else {
-                        if (typeof func === "function") {
-                            /// Has a function been previously attached to this event? If not, create a function to handle them.
-                            if (!func_list[name]) {
-                                func_list[name] = [];
-                            }
-                            /// Since we may remove events while calling them, it's easiest to store the array in reverse.
-                            func_list[name].unshift({
-                                func: func,
-                                once: once
-                            });
-                        }
-                    }
-                },
-                /**
-                 * Remove an event from the event cue.
-                 *
-                 * @example G.event.detach("contentAddedAbove", function (e) {});
-                 * @example G.event.detach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, [true, false]);
-                 * @example G.event.detach(["contentAddedAbove", "contentRemovedAbove"], function (e) {}, true);
-                 * @param   name (string || array)             The name of the event or an array of names of events.
-                 * @param   func (function)                    The function that was attached to the specified event.
-                 * @param   once (boolean || array) (optional) Whether or not to detach this function after being executed once. If "name" is an array, then "once" can also be an array of booleans.
-                 */
-                detach: function detach(name, func, once)
-                {
-                    var i;
-                    
-                    /// Are there multiple events to remove?
-                    if (name instanceof Array) {
-                        for (i = name.length - 1; i >= 0; i -= 1) {
-                            /// If "once" is an array, then use the elements of the array.
-                            /// If "once" is not an array, then just send the "once" variable each time.
-                            this.detach(name[i], func, once instanceof Array ? once[i] : once);
-                        }
-                    } else if (func_list[name]) {
-                        for (i = func_list[name].length - 1; i >= 0; i -= 1) {
-                            ///NOTE: Both func and once must match.
-                            if (func_list[name][i].func === func && func_list[name][i].once === once) {
-                                G.remove(func_list[name], i);
-                                /// Since only one event should be removed at a time, we can end now.
-                                return;
-                            }
-                        }
-                    }
-                },
-                /**
-                 * Trigger the functions attached to an event.
-                 *
-                 * @param  name (string) The name of the event to trigger.
-                 * @param  e    (object) The event object sent to the called functions.
-                 * @return NULL
-                 */
-                trigger: function trigger(name, e)
-                {
-                    var i,
-                        stop_propagation;
-                    
-                    /// Does this event have any functions attached to it?
-                    if (func_list[name]) {
-                        if (!G.is_object(e)) {
-                            /// If the event object was not specificed, it needs to be created in order to attach stopPropagation() to it.
-                            e = {};
-                        }
-                        
-                        /// If an attached function runs this function, it will stop calling other functions.
-                        e.stopPropagation = function ()
-                        {
-                            stop_propagation = true;
-                        };
-                        
-                        /// Execute the functions in reverse order so that we can remove them without throwing the order off.
-                        for (i = func_list[name].length - 1; i >= 0; i -= 1) {
-                            ///NOTE: It would be a good idea to use a try/catch to prevent errors in events from preventing the code that called the
-                            ///      event from firing.  However, there would need to be some sort of error handling. Sending a message back to the
-                            ///      server would be a good feature.
-                            /// Check to make sure the function actually exists.
-                            if (func_list[name][i]) {
-                                func_list[name][i].func(e);
-                            }
-                            
-                            /// Is this function only supposed to be executed once?
-                            if (!func_list[name][i] || func_list[name][i].once) {
-                                G.remove(func_list[name], i);
-                            }
-                            
-                            /// Was e.stopPropagation() called?
-                            if (stop_propagation) {
-                                break;
-                            }
-                        }
-                    }
-                }
-            };
-        }());
-        
 
         /**
          * Cookies.js - 1.1.0
