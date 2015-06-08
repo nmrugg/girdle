@@ -780,29 +780,37 @@ var G = (function ()
             var data = {arr: [], obj: {}},
                 i,
                 len,
-                value;
+                value,
+                name;
             
             if (form && form.elements && form.elements.length) {
                 ///NOTE: HTMLCollections are not real arrays, so there is no forEach().
                 len = form.elements.length;
-                
                 for (i = 0; i < len; i += 1) {
                     /// Only elements with a name should be retreaved.
                     ///NOTE: This does store an element with a space (" ") as a name. Is that good?
-                    if (form.elements[i].name) {
+                    name = form.elements[i].name;
+                    if (name) {
+                        /// If the name ends in [], make it an array and trim off the brackets.
+                        if (name.slice(-2) === "[]") {
+                            name = name.slice(0, -2);
+                            if (!data.obj[name]) {
+                                data.obj[name] = [];
+                            }
+                        }
                         if (form.elements[i].type === "checkbox") {
                             value = form.elements[i].checked ? true : false;
                         } else {
                             value = form.elements[i].value;
                         }
                         /// If the element already exists, turn it into an array.
-                        if (typeof data.obj[form.elements[i].name] === "undefined") {
-                            data.obj[form.elements[i].name] = value;
+                        if (typeof data.obj[name] === "undefined") {
+                            data.obj[name] = value;
                         } else {
-                            if (!Array.isArray(data.obj[form.elements[i].name])) {
-                                data.obj[form.elements[i].name] = [data.obj[form.elements[i].name]];
+                            if (!Array.isArray(data.obj[name])) {
+                                data.obj[name] = [data.obj[name]];
                             }
-                            data.obj[form.elements[i].name].push(value);
+                            data.obj[name].push(value);
                         }
                         data.arr[i] = form.elements[i];
                     }
