@@ -359,6 +359,7 @@ var G = (function ()
                     {
                         /// A psuedo event
                         if (prop === "all_on_changes") {
+                            el.addEventListener("input", events[prop]); /// This is all we really need. The others are for older browsers.
                             el.addEventListener("change", events[prop]);
                             el.addEventListener("keypress", events[prop]);
                             el.addEventListener("keyup", events[prop]);
