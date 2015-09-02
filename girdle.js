@@ -59,7 +59,7 @@ var G = (function ()
         /**
          * cents    (integer)            The amount of money in cents
          * free     (string)  (optional) The response if 0 (e.g., "FREE!")
-         * currenct (object)  (optional) An object describing the currency (e.g., {abr: "USD", sym_before: "$", sym_after: ""})
+         * currency (object)  (optional) An object describing the currency (e.g., {abr: "USD", sym_before: "$", sym_after: ""})
          */
         format_money: function format_money(cents, free, currency, rates)
         {

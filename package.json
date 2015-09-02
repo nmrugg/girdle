@@ -9,7 +9,7 @@
   "keywords": [
     "utility"
   ],
-  "main": "girdle.js",
+  "main": "girdle_loader.js",
   "licenses": [
     {
       "type": "MIT",
