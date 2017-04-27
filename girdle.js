@@ -150,7 +150,7 @@ var G = (function ()
                 {
                     if (i >= len) {
                         if (done) {
-                            return done();
+                            return delay_func(done);
                         }
                         return;
                     }
