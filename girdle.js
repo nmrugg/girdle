@@ -186,7 +186,7 @@ var G = (function ()
     ///TODO: Depriciate and remove.
     G.async_loop = G.loop;
     
-    G.events = (function ()
+    G.events = (function createEventObj()
     {
         var func_list = {};
         
@@ -311,7 +311,8 @@ var G = (function ()
                         }
                     }
                 }
-            }
+            },
+            createEventObj: createEventObj
         };
     }());
     
