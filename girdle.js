@@ -275,6 +275,7 @@ var G = (function ()
             trigger: function trigger(name, e)
             {
                 var i,
+                    func,
                     stop_propagation;
                 
                 /// Does this event have any functions attached to it?
@@ -297,12 +298,18 @@ var G = (function ()
                         ///      server would be a good feature.
                         /// Check to make sure the function actually exists.
                         if (func_list[name][i]) {
-                            func_list[name][i].func(e);
+                            func = func_list[name][i].func;
                         }
                         
                         /// Is this function only supposed to be executed once?
                         if (!func_list[name][i] || func_list[name][i].once) {
                             G.remove(func_list[name], i);
+                        }
+                        
+                        try {
+                            func(e);
+                        } catch (err) {
+                            console.error(err);
                         }
                         
                         /// Was e.stopPropagation() called?
@@ -312,7 +319,7 @@ var G = (function ()
                     }
                 }
             },
-            createEventObj: createEventObj
+            createEventObj: createEventObj,
         };
     }());
     
