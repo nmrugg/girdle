@@ -343,7 +343,8 @@ var G = (function ()
                     {
                         var prop_name = prop_sub[prop] || prop;
                         try {
-                            if (prop === "nofollow" || prop === "noreferrer" || prop === "colspan" || prop === "list" || prop === "for" || prop.indexOf(":") > -1) {
+                            
+                            if (prop === "nofollow" || prop === "noreferrer" || prop === "colspan" || prop === "list" || prop === "for" || prop === "contenteditable" || prop.indexOf(":") > -1) {
                                 el.setAttribute(prop_name, properties[prop]);
                             } else {
                                 el[prop_name] = properties[prop];
